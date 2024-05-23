@@ -1,21 +1,28 @@
 #include <iostream>
-#include <boost/program_options.hpp>
+#include <vector>
+#include <string>
+#include <algorithm>
 
-namespace po = boost::program_options;
+std::string getCmdOption(char ** begin, char ** end, const std::string & option)
+{
+    char ** itr = std::find(begin, end, option);
+    if (itr != end && ++itr != end)
+    {
+        return std::string(*itr);
+    }
+    return "";
+}
 
 int main(int argc, char* argv[]) {
-    po::options_description desc("Allowed options");
-    desc.add_options()
-        ("string", po::value<std::string>(), "input string to convert")
-        ("delimiter", po::value<std::string>()->default_value(" "), "delimiter to use between numbers");
+    std::vector<std::string> args(argv, argv + argc);
+    std::string input = getCmdOption(argv, argv + argc, "--string");
+    std::string delimiter = getCmdOption(argv, argv + argc, "--delimiter");
 
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
+    if (delimiter.empty()) {
+        delimiter = " "; // default delimiter is space
+    }
 
-    if (vm.count("string")) {
-        std::string input = vm["string"].as<std::string>();
-        std::string delimiter = vm["delimiter"].as<std::string>();
+    if (!input.empty()) {
         for (size_t i = 0; i < input.size(); ++i) {
             std::cout << static_cast<int>(input[i]);
             if (i != input.size() - 1) {

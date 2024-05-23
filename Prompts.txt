@@ -168,3 +168,160 @@ Now you can run the program with the `--string` option to specify the string and
 ```bash
 ./string_to_decimal --string "Hello" --delimiter ","
 ```
+
+jamesdanielmarrsritchey: Modify the program to NOT use the boost library.
+
+GitHub Copilot: Sure, here's a version of the program that uses only the standard library. This version uses `getopt` to parse command line options:
+
+```cpp
+#include <iostream>
+#include <unistd.h>
+#include <cstdlib>
+
+int main(int argc, char* argv[]) {
+    std::string input;
+    std::string delimiter = " ";
+    int opt;
+
+    while ((opt = getopt(argc, argv, "s:d:")) != -1) {
+        switch (opt) {
+        case 's':
+            input = optarg;
+            break;
+        case 'd':
+            delimiter = optarg;
+            break;
+        default:
+            std::cerr << "Usage: " << argv[0] << " -s string -d delimiter" << std::endl;
+            return EXIT_FAILURE;
+        }
+    }
+
+    if (input.empty()) {
+        std::cerr << "No input string was given." << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    for (size_t i = 0; i < input.size(); ++i) {
+        std::cout << static_cast<int>(input[i]);
+        if (i != input.size() - 1) {
+            std::cout << delimiter;
+        }
+    }
+    std::cout << std::endl;
+
+    return EXIT_SUCCESS;
+}
+```
+
+You can compile and run this program in the same way as before, but the command line options are now specified with a single dash:
+
+```bash
+g++ -o string_to_decimal string_to_decimal.cpp
+./string_to_decimal -s "Hello" -d ","
+```
+
+jamesdanielmarrsritchey: The arguments should be formatted as "--string value", and "--delimiter value".
+
+GitHub Copilot: The standard C++ library does not provide a built-in way to parse command line arguments with long prefixes like `--string` and `--delimiter`. However, we can implement a simple function to do this manually:
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+
+std::string getCmdOption(char ** begin, char ** end, const std::string & option)
+{
+    char ** itr = std::find(begin, end, option);
+    if (itr != end && ++itr != end)
+    {
+        return std::string(*itr);
+    }
+    return "";
+}
+
+int main(int argc, char* argv[]) {
+    std::vector<std::string> args(argv, argv + argc);
+    std::string input = getCmdOption(argv, argv + argc, "--string");
+    std::string delimiter = getCmdOption(argv, argv + argc, "--delimiter");
+
+    if (delimiter.empty()) {
+        delimiter = " "; // default delimiter is space
+    }
+
+    if (!input.empty()) {
+        for (size_t i = 0; i < input.size(); ++i) {
+            std::cout << static_cast<int>(input[i]);
+            if (i != input.size() - 1) {
+                std::cout << delimiter;
+            }
+        }
+        std::cout << std::endl;
+    } else {
+        std::cout << "No input string was given." << std::endl;
+    }
+
+    return 0;
+}
+```
+
+You can compile and run this program in the same way as before:
+
+```bash
+g++ -o string_to_decimal string_to_decimal.cpp
+./string_to_decimal --string "Hello" --delimiter ","
+```
+
+jamesdanielmarrsritchey: This contains a "no matching function for call" error.
+
+GitHub Copilot: The error message "no matching function for call" typically means that you're trying to call a function that doesn't exist or doesn't match the arguments you're providing. In this case, it's because `std::find` is not included in the code. `std::find` is part of the `<algorithm>` library.
+
+Here's the corrected code:
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+
+std::string getCmdOption(char ** begin, char ** end, const std::string & option)
+{
+    char ** itr = std::find(begin, end, option);
+    if (itr != end && ++itr != end)
+    {
+        return std::string(*itr);
+    }
+    return "";
+}
+
+int main(int argc, char* argv[]) {
+    std::vector<std::string> args(argv, argv + argc);
+    std::string input = getCmdOption(argv, argv + argc, "--string");
+    std::string delimiter = getCmdOption(argv, argv + argc, "--delimiter");
+
+    if (delimiter.empty()) {
+        delimiter = " "; // default delimiter is space
+    }
+
+    if (!input.empty()) {
+        for (size_t i = 0; i < input.size(); ++i) {
+            std::cout << static_cast<int>(input[i]);
+            if (i != input.size() - 1) {
+                std::cout << delimiter;
+            }
+        }
+        std::cout << std::endl;
+    } else {
+        std::cout << "No input string was given." << std::endl;
+    }
+
+    return 0;
+}
+```
+
+You can compile and run this program in the same way as before:
+
+```bash
+g++ -o string_to_decimal string_to_decimal.cpp
+./string_to_decimal --string "Hello" --delimiter ","
+```
